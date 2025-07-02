@@ -24,7 +24,7 @@ def process_and_save_video(input_path, output_path):
         print("[WARNING] FPS tidak valid, menggunakan default 25")
         fps = 25
 
-    fourcc = cv2.VideoWriter_fourcc(*'avc1')
+    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
     out = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
     if not out.isOpened():
         raise RuntimeError(f"[ERROR] Gagal menyimpan video ke: {output_path}")
