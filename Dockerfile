@@ -4,8 +4,9 @@ WORKDIR /app
 
 COPY . .
 
-# Install libGL agar OpenCV bisa jalan
-RUN apt-get update && apt-get install -y ffmpeg libgl1
+# Install FFMPEG + libx264
+RUN apt-get update && \
+    apt-get install -y ffmpeg libsm6 libxext6 libgl1
 
 RUN pip install --no-cache-dir -r requirements.txt
 
