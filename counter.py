@@ -5,7 +5,7 @@ import os
 import pandas as pd
 
 model = YOLO("yolov8n.pt")  # ganti sesuai model kamu
-tracker = DeepSort(max_age=30)  # bisa di-tweak sesuai performa tracking
+tracker = DeepSort(embedder="mobilenet", half=True)  # bisa di-tweak sesuai performa tracking
 
 def process_and_save_video(input_path, output_path):
     vehicle_labels = ['car', 'motorcycle', 'truck', 'bus']
