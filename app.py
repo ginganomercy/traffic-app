@@ -2,6 +2,7 @@ import os
 from flask import Flask, render_template, request, redirect, url_for, send_file,session
 from datetime import datetime
 import uuid
+from threading import Thread
 
 from counter import process_and_save_video
 
@@ -23,7 +24,6 @@ def perhitungan():
     video_path = None
     return render_template("perhitungan.html", title="Perhitungan", video_path=video_path)
 
-    
 @app.route("/process-video", methods=["POST"])
 def process_video():
     try:
@@ -31,22 +31,26 @@ def process_video():
 
         input_path = os.path.join("static", data["video_path"])
         output_path = os.path.join("static", "processed", f"processed_{os.path.basename(input_path)}")
-
         os.makedirs("static/processed", exist_ok=True)
 
-        # Jalankan proses
-        processed_filename, excel_filename, counts = process_and_save_video(input_path, output_path)
+        def background_process():
+            try:
+                processed_filename, excel_filename, counts = process_and_save_video(input_path, output_path)
 
-        # Simpan hasil ke session untuk halaman /hasil
-        session["hasil_counts"] = counts
-        session["excel_filename"] = excel_filename
+                # Simpan hasil ke file agar bisa diakses di halaman /hasil
+                with open("static/processed/_last_result.txt", "w") as f:
+                    f.write(f"{processed_filename}|{excel_filename}|{counts}")
 
-        print("[INFO] Video & Excel berhasil diproses")
-        print("[INFO] processed_filename:", processed_filename)
-        print("[INFO] counts:", counts)
+                print("[INFO] Proses selesai di background")
+                print("[INFO] processed_filename:", processed_filename)
+                print("[INFO] counts:", counts)
+            except Exception as e:
+                print("[ERROR background]", str(e))
+
+        Thread(target=background_process).start()
 
         return {
-            "processed_video": f"processed/{processed_filename}"
+            "status": "processing started"
         }
 
     except Exception as e:
