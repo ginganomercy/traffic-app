@@ -1,5 +1,5 @@
 import os
-from flask import Flask, render_template, request, redirect, url_for, send_file,session
+from flask import Flask, render_template, request, redirect, url_for, send_file
 from datetime import datetime
 import uuid
 from threading import Thread
@@ -76,10 +76,20 @@ def upload_video():
 @app.route("/hasil")
 def hasil():
     waktu = datetime.now().strftime("%A, %d %B %Y %H:%M:%S")
-    counts = session.get("hasil_counts", {})
-    excel_filename = session.get("excel_filename", None)
-    return render_template("hasil.html", title="Hasil Perhitungan", waktu=waktu, counts=counts, excel_filename=excel_filename)
 
+    # Baca hasil dari file jika tersedia
+    counts = {}
+    excel_filename = None
+    try:
+        with open("static/processed/_last_result.txt", "r") as f:
+            line = f.read().strip()
+            if line:
+                processed_filename, excel_filename, counts_raw = line.split("|")
+                counts = eval(counts_raw)  # ⚠️ Pastikan aman dari user input
+    except Exception as e:
+        print("[ERROR hasil]", str(e))
+
+    return render_template("hasil.html", title="Hasil Perhitungan", waktu=waktu, counts=counts, excel_filename=excel_filename)
 
 @app.route("/download-excel")
 def download_excel():
@@ -89,7 +99,6 @@ def download_excel():
 
     file_path = os.path.join(PROCESSED_FOLDER, filename)
     return send_file(file_path, as_attachment=True)
-
 
 if __name__ == "__main__":
     app.run(debug=True)
